@@ -77,3 +77,28 @@ class Channel:
         """
         self.listeners = [
             callback for callback in self.listeners if callback.event != event]
+        
+    def push(self, event: str, payload: Any) -> None:
+        """"
+        Wrapper for async def _push() to expose a non-async interface
+        Essentially gets the only event loop and attempt sending a message
+        :return: Channel
+        """
+        loop = asyncio.get_event_loop()  # TODO: replace with get_running_loop
+        loop.run_until_complete(self._push(event, payload))
+        return self
+        
+    async def _push(self, event: str, payload: Any) -> None:
+        """
+        :param event: Event to send to the server
+        :param payload: Payload to send to the server
+        :return: None
+        """
+        push_req = dict(topic=self.topic, event=event,
+                        payload=payload, ref=None)
+        
+        try:
+            await self.socket.ws_connection.send(json.dumps(push_req))
+        except Exception as e:
+            print(str(e))  # TODO: better error propagation
+            return
