@@ -48,7 +48,7 @@ class Socket:
         self.ws_connection: websockets.client.WebSocketClientProtocol
         self.kept_alive = False
 
-        self.channels = cast(defaultdict[str, List[Channel]], self.channels)
+        # self.channels = cast(defaultdict[str, List[Channel]], self.channels)
 
     @ensure_connection
     def listen(self) -> None:
@@ -86,7 +86,8 @@ class Socket:
         """
         Wrapper for async def _connect() to expose a non-async interface
         """
-        loop = asyncio.get_event_loop()  # TODO: replace with get_running
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
         loop.run_until_complete(self._connect())
         self.connected = True
 
